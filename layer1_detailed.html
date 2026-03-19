@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CloudSec Wiki</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0e0f11;
+  --bg2: #161719;
+  --bg3: #1e2024;
+  --bg4: #252830;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #e2e4e9;
+  --text2: #9098a8;
+  --text3: #5a6272;
+  --accent: #4f7ef7;
+  --accent2: #2a4db8;
+  --red: #e05c5c;
+  --red-bg: rgba(224,92,92,0.08);
+  --red-border: rgba(224,92,92,0.2);
+  --green: #4ecb8d;
+  --green-bg: rgba(78,203,141,0.08);
+  --green-border: rgba(78,203,141,0.2);
+  --amber: #f0a843;
+  --amber-bg: rgba(240,168,67,0.08);
+  --amber-border: rgba(240,168,67,0.2);
+  --blue: #4f7ef7;
+  --blue-bg: rgba(79,126,247,0.08);
+  --blue-border: rgba(79,126,247,0.2);
+  --purple: #a78bfa;
+  --purple-bg: rgba(167,139,250,0.08);
+  --purple-border: rgba(167,139,250,0.2);
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+}
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 0;
+}
+
+/* ── Layer tab bar (hidden when only one layer) ───────── */
+.layer-bar {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2.5rem;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+}
+
+.layer-bar.single { display: none; }
+
+.layer-tab {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 12px 18px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text3);
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+
+.layer-tab:hover { color: var(--text2); }
+
+.layer-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ── Page header ──────────────────────────────────────── */
+.page-header {
+  padding: 2.5rem 2.5rem 2rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+}
+
+.page-header h1 {
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--mono);
+  color: var(--accent);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.page-header p {
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--text);
+  letter-spacing: -.02em;
+  line-height: 1.3;
+}
+
+.page-header .desc {
+  font-size: 13px;
+  color: var(--text2);
+  margin-top: 8px;
+  font-weight: 300;
+  line-height: 1.6;
+  max-width: 680px;
+}
+
+/* ── Layout ───────────────────────────────────────────── */
+.layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: calc(100vh - 130px);
+}
+
+.sidebar {
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  padding: 1.5rem 0;
+  position: sticky;
+  top: 0;
+  height: calc(100vh - 130px);
+  overflow-y: auto;
+}
+
+.sidebar-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: 0 1.2rem 0.8rem;
+}
+
+.nav-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 1.2rem;
+  background: none;
+  border: none;
+  border-left: 2px solid transparent;
+  cursor: pointer;
+  font-family: var(--sans);
+  transition: all .15s;
+}
+
+.nav-item:hover { background: var(--bg3); }
+
+.nav-item.active {
+  border-left-color: var(--accent);
+  background: var(--bg3);
+}
+
+.nav-item .nav-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.nav-item.active .nav-title { color: var(--accent); }
+
+.nav-item .nav-sub {
+  font-size: 11px;
+  color: var(--text3);
+  display: block;
+  line-height: 1.4;
+}
+
+.content {
+  padding: 2rem 2.5rem;
+  max-width: 900px;
+}
+
+.panel { display: none; }
+.panel.visible { display: block; }
+
+/* ── Attack panel elements ────────────────────────────── */
+.attack-title {
+  font-size: 24px;
+  font-weight: 300;
+  letter-spacing: -.02em;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.attack-cve {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: .04em;
+  margin-bottom: 1.5rem;
+}
+
+.section {
+  margin-bottom: 1.8rem;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1rem;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 3px;
+}
+
+.tag-what     { background: var(--red-bg);    color: var(--red);    border: 1px solid var(--red-border);    }
+.tag-why      { background: var(--amber-bg);  color: var(--amber);  border: 1px solid var(--amber-border);  }
+.tag-defense  { background: var(--green-bg);  color: var(--green);  border: 1px solid var(--green-border);  }
+.tag-gap      { background: var(--amber-bg);  color: var(--amber);  border: 1px solid var(--amber-border);  }
+.tag-research { background: var(--blue-bg);   color: var(--blue);   border: 1px solid var(--blue-border);   }
+.tag-ref      { background: var(--purple-bg); color: var(--purple); border: 1px solid var(--purple-border); }
+
+.explainer {
+  font-size: 14px;
+  color: var(--text2);
+  line-height: 1.8;
+  margin-bottom: 1rem;
+}
+
+.explainer strong { color: var(--text); font-weight: 500; }
+
+.explainer code {
+  font-family: var(--mono);
+  font-size: 12px;
+  background: var(--bg4);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--accent);
+}
+
+.step-list {
+  list-style: none;
+  counter-reset: steps;
+}
+
+.step-list li {
+  counter-increment: steps;
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.6;
+}
+
+.step-list li::before {
+  content: counter(steps);
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  background: var(--bg4);
+  border: 1px solid var(--border2);
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.step-list li strong { color: var(--text); font-weight: 500; }
+.step-list li code {
+  font-family: var(--mono);
+  font-size: 11px;
+  background: var(--bg4);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--accent);
+}
+
+.callout {
+  border-radius: 6px;
+  padding: 14px 16px;
+  margin: 10px 0;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.callout-red    { background: var(--red-bg);    border: 1px solid var(--red-border);    color: var(--text2); }
+.callout-green  { background: var(--green-bg);  border: 1px solid var(--green-border);  color: var(--text2); }
+.callout-amber  { background: var(--amber-bg);  border: 1px solid var(--amber-border);  color: var(--text2); }
+.callout-blue   { background: var(--blue-bg);   border: 1px solid var(--blue-border);   color: var(--text2); }
+.callout-purple { background: var(--purple-bg); border: 1px solid var(--purple-border); color: var(--text2); }
+
+.callout strong { font-weight: 500; }
+.callout-red    strong { color: var(--red);    }
+.callout-green  strong { color: var(--green);  }
+.callout-amber  strong { color: var(--amber);  }
+.callout-blue   strong { color: var(--blue);   }
+.callout-purple strong { color: var(--purple); }
+
+.callout p { margin-bottom: 6px; }
+.callout p:last-child { margin-bottom: 0; }
+
+.two-col {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  gap: 12px;
+  margin: 10px 0;
+}
+
+.card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 16px;
+}
+
+.card-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.defense-item {
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.defense-item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.defense-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--green);
+  margin-bottom: 4px;
+}
+
+.defense-desc {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.6;
+}
+
+.defense-desc code, .defense-desc strong {
+  font-family: var(--mono);
+  font-size: 11px;
+  background: var(--bg4);
+  padding: 1px 4px;
+  border-radius: 3px;
+  color: var(--accent);
+}
+.defense-desc strong {
+  font-family: var(--sans);
+  font-size: 12px;
+  background: none;
+  padding: 0;
+  color: var(--text);
+}
+
+.gap-item {
+  margin-bottom: 12px;
+  padding-left: 12px;
+  border-left: 2px solid var(--amber-border);
+}
+
+.gap-label {
+  font-size: 11px;
+  font-family: var(--mono);
+  color: var(--amber);
+  margin-bottom: 3px;
+}
+
+.gap-text {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.6;
+}
+
+.ref-list { list-style: none; }
+
+.ref-list li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.ref-list li:last-child { border-bottom: none; }
+
+.ref-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--purple);
+  display: inline-block;
+  width: 28px;
+}
+
+.ref-title  { color: var(--text); font-weight: 500; }
+.ref-authors { color: var(--text3); margin-top: 2px; }
+
+.ref-venue {
+  color: var(--purple);
+  font-family: var(--mono);
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.ref-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 11px;
+  font-family: var(--mono);
+}
+
+.ref-link:hover { text-decoration: underline; }
+
+.annotation {
+  background: var(--bg4);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--text3);
+  font-family: var(--mono);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.layer-note {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 3px;
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.layer-note.l1    { background: var(--blue-bg);  color: var(--blue);  border: 1px solid var(--blue-border);  }
+.layer-note.mixed { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-border); }
+
+/* ── Bottom navigation ────────────────────────────────── */
+.nav-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2.5rem;
+  border-top: 1px solid var(--border);
+  margin-top: 1rem;
+}
+
+.nav-btn {
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 8px 18px;
+  border-radius: 4px;
+  border: 1px solid var(--border2);
+  background: var(--bg3);
+  color: var(--text2);
+  cursor: pointer;
+  transition: all .15s;
+  letter-spacing: .04em;
+}
+
+.nav-btn:hover { background: var(--bg4); color: var(--text); border-color: var(--accent); }
+
+.progress {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.prog-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--bg4);
+  border: 1px solid var(--border2);
+  cursor: pointer;
+  transition: all .15s;
+}
+
+.prog-dot.active { background: var(--accent); border-color: var(--accent); }
+
+@media (max-width: 700px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; display: flex; flex-wrap: wrap; padding: .8rem; gap: 4px; }
+  .sidebar-label { display: none; }
+  .nav-item { border-left: none; border-bottom: 2px solid transparent; padding: 6px 10px; width: auto; }
+  .nav-item.active { border-bottom-color: var(--accent); }
+  .nav-item .nav-sub { display: none; }
+  .two-col { grid-template-columns: 1fr; }
+  .content { padding: 1.5rem; }
+  .layer-bar { padding: 0 1rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- Layer tab bar — auto-hidden when only one layer -->
+<div class="layer-bar" id="layer-bar"></div>
+
+<!-- Page header — filled dynamically -->
+<div class="page-header">
+  <h1 id="header-label"></h1>
+  <p id="header-title"></p>
+  <p class="desc" id="header-desc"></p>
+</div>
+
+<div class="layout">
+  <nav class="sidebar">
+    <p class="sidebar-label">Attack classes</p>
+    <div id="sidebar-nav"></div>
+  </nav>
+
+  <main class="content" id="content-area"></main>
+</div>
+
+<div class="nav-footer">
+  <button class="nav-btn" id="btn-prev">← Previous</button>
+  <div class="progress" id="progress"></div>
+  <button class="nav-btn" id="btn-next">Next →</button>
+</div>
+
+<!-- Content data — edit layers_data.js to add attacks or layers -->
+<script src="layers_data.js"></script>
+
+<script>
+let currentLayer  = 0;
+let currentAttack = 0;
+
+// ── Helpers ──────────────────────────────────────────────────────
+
+function el(tag, cls, html) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (html !== undefined) e.innerHTML = html;
+  return e;
+}
+
+function makeCallout(c) {
+  if (!c) return null;
+  return el('div', `callout callout-${c.color}`, c.html);
+}
+
+function makeSection(tagText, tagCls) {
+  const sec = el('div', 'section');
+  const hdr = el('div', 'section-header');
+  hdr.appendChild(el('span', `section-tag ${tagCls}`, tagText));
+  sec.appendChild(hdr);
+  return sec;
+}
+
+// ── Panel builder ─────────────────────────────────────────────────
+
+function buildPanel(attack, idx) {
+  const panel = el('div', 'panel');
+  panel.dataset.idx = idx;
+
+  // Badge + title
+  panel.appendChild(el('span', `layer-note ${attack.badgeStyle || 'l1'}`, attack.badge));
+  panel.appendChild(el('h2', 'attack-title', attack.title));
+  panel.appendChild(el('p', 'attack-cve', attack.cve));
+
+  // ── Background section ────────────────────────────────────────
+  const bg = attack.background;
+  const bgSec = makeSection(bg.tag, 'tag-why');
+
+  bg.paragraphs.forEach(p => bgSec.appendChild(el('p', 'explainer', p)));
+
+  if (bg.cards && bg.cards.length) {
+    const twoCol = el('div', 'two-col');
+    bg.cards.forEach(c => {
+      const card = el('div', 'card');
+      const cardTitle = el('p', 'card-title', c.title);
+      cardTitle.style.color = `var(--${c.titleColor})`;
+      card.appendChild(cardTitle);
+      card.appendChild(el('p', 'defense-desc', c.text));
+      twoCol.appendChild(card);
+    });
+    bgSec.appendChild(twoCol);
+  }
+
+  if (bg.callout) bgSec.appendChild(makeCallout(bg.callout));
+  panel.appendChild(bgSec);
+
+  // ── Mechanism section ─────────────────────────────────────────
+  const mech = attack.mechanism;
+  const mechSec = makeSection(mech.tag, 'tag-what');
+  if (mech.intro) mechSec.appendChild(el('p', 'explainer', mech.intro));
+
+  const ol = el('ol', 'step-list');
+  mech.steps.forEach(s => ol.appendChild(el('li', null, s)));
+  mechSec.appendChild(ol);
+
+  if (mech.callout) mechSec.appendChild(makeCallout(mech.callout));
+  panel.appendChild(mechSec);
+
+  // ── Defenses section ──────────────────────────────────────────
+  const defSec = makeSection(attack.defenses.tag, 'tag-defense');
+  attack.defenses.items.forEach(d => {
+    const item = el('div', 'defense-item');
+    item.appendChild(el('p', 'defense-name', d.name));
+    item.appendChild(el('p', 'defense-desc', d.desc));
+    defSec.appendChild(item);
+  });
+  panel.appendChild(defSec);
+
+  // ── Gaps section ──────────────────────────────────────────────
+  const gapData = attack.gaps;
+  const gapSec = makeSection(gapData.tag, 'tag-gap');
+  gapData.items.forEach(g => {
+    const item = el('div', 'gap-item');
+    item.appendChild(el('p', 'gap-label', g.label));
+    item.appendChild(el('p', 'gap-text', g.text));
+    gapSec.appendChild(item);
+  });
+  if (gapData.research) {
+    const rc = el('div', 'callout callout-blue');
+    rc.innerHTML = `<strong>Research direction:</strong> ${gapData.research}`;
+    gapSec.appendChild(rc);
+  }
+  panel.appendChild(gapSec);
+
+  // ── References section ────────────────────────────────────────
+  const refSec = makeSection('Primary references', 'tag-ref');
+  const ul = el('ul', 'ref-list');
+  attack.references.forEach(r => {
+    const li = document.createElement('li');
+    li.innerHTML =
+      `<span class="ref-num">[${r.num}]</span>` +
+      `<span class="ref-title">${r.title}</span><br>` +
+      `<span class="ref-authors">${r.authors}</span><br>` +
+      `<span class="ref-venue">${r.venue}</span>` +
+      (r.url ? `<br><a class="ref-link" href="${r.url}" target="_blank">${r.url}</a>` : '') +
+      (r.annotation ? `<div class="annotation">${r.annotation}</div>` : '');
+    ul.appendChild(li);
+  });
+  refSec.appendChild(ul);
+  panel.appendChild(refSec);
+
+  return panel;
+}
+
+// ── Layer renderer ────────────────────────────────────────────────
+
+function renderLayer(layerIdx) {
+  currentLayer  = layerIdx;
+  currentAttack = 0;
+
+  const layer = LAYERS[layerIdx];
+
+  // Update page header
+  document.title = 'CloudSec Wiki';
+  document.getElementById('header-label').textContent = layer.headerLabel;
+  document.getElementById('header-title').textContent = `${layer.title} — ${layer.subtitle}`;
+  document.getElementById('header-desc').textContent  = layer.description;
+
+  // Update layer tab active state
+  document.querySelectorAll('.layer-tab').forEach((t, i) =>
+    t.classList.toggle('active', i === layerIdx));
+
+  // Build sidebar
+  const nav = document.getElementById('sidebar-nav');
+  nav.innerHTML = '';
+  layer.attacks.forEach((attack, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'nav-item' + (i === 0 ? ' active' : '');
+    btn.innerHTML =
+      `<span class="nav-title">${attack.navTitle}</span>` +
+      `<span class="nav-sub">${attack.navSub.replace(/\n/g, '<br>')}</span>`;
+    btn.onclick = () => showAttack(i);
+    nav.appendChild(btn);
+  });
+
+  // Build panels
+  const content = document.getElementById('content-area');
+  content.innerHTML = '';
+  layer.attacks.forEach((attack, i) => {
+    const panel = buildPanel(attack, i);
+    if (i === 0) panel.classList.add('visible');
+    content.appendChild(panel);
+  });
+
+  // Build progress dots
+  const prog = document.getElementById('progress');
+  prog.innerHTML = '';
+  layer.attacks.forEach((_, i) => {
+    const dot = el('div', 'prog-dot' + (i === 0 ? ' active' : ''));
+    dot.title   = layer.attacks[i].navTitle;
+    dot.onclick = () => showAttack(i);
+    prog.appendChild(dot);
+  });
+}
+
+// ── Navigation ────────────────────────────────────────────────────
+
+function showAttack(idx) {
+  const layer = LAYERS[currentLayer];
+  currentAttack = idx;
+
+  document.querySelectorAll('#content-area .panel').forEach((p, i) =>
+    p.classList.toggle('visible', i === idx));
+  document.querySelectorAll('#sidebar-nav .nav-item').forEach((n, i) =>
+    n.classList.toggle('active', i === idx));
+  document.querySelectorAll('#progress .prog-dot').forEach((d, i) =>
+    d.classList.toggle('active', i === idx));
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.getElementById('btn-prev').onclick = () => {
+  const n = LAYERS[currentLayer].attacks.length;
+  showAttack((currentAttack - 1 + n) % n);
+};
+document.getElementById('btn-next').onclick = () => {
+  const n = LAYERS[currentLayer].attacks.length;
+  showAttack((currentAttack + 1) % n);
+};
+
+// ── Init ──────────────────────────────────────────────────────────
+
+(function init() {
+  // Build layer tabs
+  const bar = document.getElementById('layer-bar');
+  if (LAYERS.length === 1) {
+    bar.classList.add('single');
+  } else {
+    LAYERS.forEach((layer, i) => {
+      const tab = el('button', 'layer-tab' + (i === 0 ? ' active' : ''),
+        `${layer.title} <span style="opacity:.5;font-size:10px;">${layer.subtitle}</span>`);
+      tab.onclick = () => renderLayer(i);
+      bar.appendChild(tab);
+    });
+  }
+
+  renderLayer(0);
+})();
+</script>
+
+</body>
+</html>
